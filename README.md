@@ -1,0 +1,2 @@
+# aividur
+GenAI app
