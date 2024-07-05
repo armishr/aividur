@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="common.css">
+    <style>
+         /* Style for the container */
+         .container {
+            display: flex;
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+         
+        }
+
+        /* Style for the first box */
+        .box1 {
+            width: 0px; /* Initial width set to 0px to make it collapsed */
+            background-color: rgba(243, 243, 247, 0.845);            
+        }
+
+        /* Style for the second box */
+        .box2 {
+            flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+            background-color: white;          
+            position: relative;
+        }
+
+        /* Style for the hamburger menu icon */
+        #collapseButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #pagetitle h2 {
+            margin-left: 40px; /* Add left margin for spacing */
+        }
+        .delete-button-disabled {
+        pointer-events: none;
+    }
+    </style>
+</head>
+<body>
+    <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+
+    <div class="container">
+        <!-- Sidebar Column -->
+        <div class="box1" id="box1">
+            <script src="/sidebar"></script>
+            <script>createSidebarTemplate();</script>
+        </div> 
+        <!-- Upload Container Column -->
+        <div class="box2" id="box2">
+            <div id="collapseButton" onclick="collapseBox()">&#9776;</div>            
+            <div id="pagetitle">
+                <h2>List of Available Assistants</h2>
+            </div>
+            <div>
+                <table class="table table-bordered" id="assistantsTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Assistant Description</th>
+                            <th>Model Type</th>
+                            <th>Visibility</th>
+                            <th>Created By</th>
+                            <th>Created On</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Data will be populated here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+        
+    </div>
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="common.js"></script>
+
+    <script>
+        // Function to fetch data from the server and populate the table
+        function fetchDataAndPopulateTable() {
+            const currentUserId = getCookie('user_id');
+            fetch('http://127.0.0.1:5000/get_assistants_data')  // Replace with your actual API endpoint
+                .then(response => response.json())
+                .then(data => {
+                                                           
+                    // Populate the table with data
+                    populateTable(data.assistant_data, currentUserId);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        // Function to retrieve a specific cookie value by name
+        function getCookie(name) {
+            const cookieArray = document.cookie.split(';');
+            for (let i = 0; i < cookieArray.length; i++) {
+                const cookie = cookieArray[i].trim();
+                if (cookie.startsWith(`${name}=`)) {
+                    return cookie.substring(name.length + 1);
+                }
+            }
+            return null;
+        }
+
+        // Function to populate the table with data
+        // Function to populate the table with data
+        function populateTable(data, currentUserId) {
+            var tableBody = document.getElementById('assistantsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';  // Clear existing rows
+
+            // Loop through the data and append rows to the table
+            data.forEach(function (assistant) {
+                // Check if the current user ID is the same as the creator user ID
+                const isCurrentUserCreator = assistant[4] === currentUserId;
+
+                var row = '<tr>' +
+                    '<td>' + assistant[0] + '</td>' +
+                    '<td>' + assistant[1] + '</td>' +
+                    '<td>' + assistant[2] + '</td>' +
+                    '<td>' + assistant[3] + '</td>' +
+                    '<td>' + assistant[4] + '</td>' +
+                    '<td>' + assistant[5] + '</td>' +
+                    '<td>' +
+                        '<div class="btn-group" role="group">' +
+                            '<button class="btn ' + (isCurrentUserCreator ? 'btn-primary' : 'btn-secondary delete-button-disabled') + '" onclick="Assistantdelete(\'' + assistant[0] + '\')" ' + (isCurrentUserCreator ? '' : 'disabled') + '>Delete</button>' +
+                        '</div>'
+                    '</td>' +
+                '</tr>';
+
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Your JavaScript code for handling button actions
+        function Assistantdelete(assistantName) {
+            fetch(`http://127.0.0.1:5000/delete_assistants_data/${assistantName}`, {
+                method: 'DELETE',
+            })  // Replace with your actual API endpoint
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the table with data
+                    fetchDataAndPopulateTable();
+                })
+                .catch(error => {
+                    console.error('Error deleting the Assistant:', error);
+                });
+        
+        }
+
+        // Call the function to fetch data and populate the table on form load
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchDataAndPopulateTable();
+        });
+        
+    </script>
+</body>
+</html>

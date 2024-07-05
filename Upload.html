@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+     
+        input[type="file"] {
+            display: none;
+        }     
+            /* Add this style to set the width of both buttons */
+        .custom-btn {
+            width: 300px; /* Adjust the width as needed */
+        }
+                /* Section styles */
+        .assistant-config-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+        .container {
+            display: flex;
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+         
+        }
+
+        /* Style for the first box */
+        .box1 {
+            width: 0px; /* Initial width set to 0px to make it collapsed */
+            background-color: rgba(243, 243, 247, 0.845);            
+        }
+
+        /* Style for the second box */
+        .box2 {
+            flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+            background-color: white;          
+            position: relative;
+            margin-left: 10px;
+        }
+
+        /* Style for the hamburger menu icon */
+        #collapseButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #pagetitle h2 {
+            margin-left: 40px; /* Add left margin for spacing */
+        }
+
+        
+
+    </style>
+</head>
+<body>
+    <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+
+    <div class="container">
+        <div class="box1" id="box1">
+            <script src="/sidebar"></script>
+            <script>createSidebarTemplate();</script>
+        </div> 
+
+        <div class="box2" id="box2">
+            <div id="collapseButton" onclick="collapseBox()">&#9776;</div>            
+            <div id="pagetitle">
+                <h2>Create New Assistant</h2>
+            </div>    
+            <div class="section assistant-config-section">
+                <div class="form-group">
+                    <label for="assistantName">Name of the Assistant:</label>
+                    <input type="text" class="form-control" id="assistantName" placeholder="Enter Assistant Name">
+                </div>
+                <div class="form-group">
+                    <label for="assistantDescription">Description:</label>
+                    <textarea class="form-control" id="assistantDescription" rows="1" placeholder="Enter Assistant Description"></textarea>
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <p style="margin-top: 8px;">Visibility:</p>
+                    <label for="private" style="margin-left: 20px;">
+                        <input type="radio" id="private" name="privacy" value="private" checked> Private
+                    </label>
+                    <label for="public" style="margin-left: 10px;">
+                        <input type="radio" id="public" name="privacy" value="public"> Public
+                    </label>
+
+                </div>
+                <div style="display: flex; align-items: center;">
+                    <p style="margin-top: 8px;">Model Name:</p>
+                    <label for="openaiModel" style="margin-left: 10px;">
+                        <input type="radio" id="openaiModel" name="languageModel" value="OpenAI" checked> OpenAI
+                    </label>
+                    <label for="llamaModel" style="margin-left: 20px;">
+                        <input type="radio" id="llamaModel" name="languageModel" value="Llama" > Llama
+                    </label>
+                    <label for="geminiModel" style="margin-left: 10px;">
+                        <input type="radio" id="geminiModel" name="languageModel" value="Gemini" > Gemini
+                    </label>
+                    <label for="mistralModel" style="margin-left: 10px;">
+                        <input type="radio" id="mistralModel" name="languageModel" value="Mistral" > Mistral
+                    </label>
+                </div>
+            </div>
+    
+            <!-- Upload Files Section -->
+            <div class="section upload-section" style="display: flex; flex-direction: column; align-items: center;">        
+                <label for="documentInput" class="btn btn-primary custom-btn" style="margin-top: 30px;">Upload Documents</label>
+                <input type="file" id="documentInput" accept=".txt, .pdf" multiple class="form-control-file">
+                <div id="documentName"></div>
+                <div class="spinner-container" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+                <div class="message-container" style="display: none;">
+                    <p id="uploadMessage"></p>
+                </div>
+            </div>           
+        </div>
+    </div>
+
+        
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="common.js"></script>
+
+    <script>
+
+        const documentInput = document.getElementById('documentInput');
+        const documentName = document.getElementById('documentName');
+        const spinnerContainer = document.querySelector('.spinner-container');
+        const messageContainer = document.querySelector('.message-container');
+        const uploadMessage = document.getElementById('uploadMessage');
+        
+
+        function getSelectedModel() {
+            // Get all radio buttons with the name "languageModel"
+            const radioButtons = document.getElementsByName("languageModel");
+
+            let selectedModel = null;
+
+            // Loop through the radio buttons to find the checked one
+            for (let i = 0; i < radioButtons.length; i++) {
+                if (radioButtons[i].checked) {
+                    selectedModel = radioButtons[i].value;
+                    break; // Exit the loop once a checked radio button is found
+                }
+            }
+
+            if (selectedModel !== null) {
+                return(selectedModel);
+            } else {
+                alert("No model selected.");
+            }
+        }
+
+        function getSelectedVisibility() {
+            // Get all radio buttons with the name "languageModel"
+            const radioButtons = document.getElementsByName("privacy");
+
+            let selectedModel = null;
+
+            // Loop through the radio buttons to find the checked one
+            for (let i = 0; i < radioButtons.length; i++) {
+                if (radioButtons[i].checked) {
+                    selectedPrivacy = radioButtons[i].value;
+                    break; // Exit the loop once a checked radio button is found
+                }
+            }
+
+            if (selectedPrivacy !== null) {
+                return(selectedPrivacy);
+            } else {
+                alert("No privacy selected.");
+            }
+        }
+
+        documentInput.addEventListener('change', function() {
+            const modelName = getSelectedModel();
+            const privacy = getSelectedVisibility();
+            const files = this.files;
+            const assistantName = document.getElementById('assistantName').value;
+            const assistantDescription = document.getElementById('assistantDescription').value;            
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userid');
+            const maxSize = 10 * 1024 * 1024; // 1 MB limit
+
+            let totalSize = 0;
+
+            for (let i = 0; i < files.length; i++) {
+                totalSize += files[i].size;
+            }
+
+            if (totalSize > maxSize) {
+                alert('Total file size exceeds the limit of 1 MB.');
+                return;
+            }
+
+            if (files.length > 0) {
+                let uploadedFileNames = '';   
+                for (let i = 0; i < files.length; i++) {
+                    uploadedFileNames += files[i].name + ', ';
+                }
+                // Remove the trailing comma and space
+                uploadedFileNames = uploadedFileNames.slice(0, -2);
+                documentName.textContent = 'Uploaded Documents: ' + uploadedFileNames;
+                // Show loading spinner
+                spinnerContainer.style.display = 'block';
+
+                // Send files to the backend using fetch
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('file', files[i]);
+                }
+                        // Append Assistant Name and Assistant Purpose to FormData
+                formData.append('assistantName', assistantName);
+                formData.append('assistantDescription', assistantDescription);        
+                
+                formData.append('userid', userId);
+                formData.append('privacy', privacy);
+                const progressBar = document.getElementById('progressBar');
+
+                fetch(`http://127.0.0.1:5000/upload/${modelName}`, {
+                    method: 'POST',
+                    credentials: 'include',
+                    body: formData,
+
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Parse the JSON from the response
+                    } else {
+                        throw new Error('Failed to upload file(s).');
+                    }
+                })
+                .then(data => {
+                    console.log('File(s) uploaded successfully.');
+                    uploadMessage.textContent = data.message;
+                    messageContainer.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Hide loading spinner
+                    spinnerContainer.style.display = 'none';
+                    // Reset file input and display
+                    documentInput.value = '';
+                    documentName.textContent = '';
+                });
+
+            } else {
+                documentName.textContent = '';
+              
+            }
+        });
+        
+    </script>
+</body>
+</html>

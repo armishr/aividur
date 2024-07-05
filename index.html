@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIVidur: Your LLM Playground</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Your existing CSS styles */
+        :root {
+            --bg-color-dark: #121212;
+            --text-color-dark: #e0e0e0;
+            --header-bg-dark: #1f1f1f;
+            --box-bg-dark: #1f1f1f;
+            --box-hover-bg-dark: #292929;
+            --solution-bg-dark: #292929;
+            --solution-hover-bg-dark: #3a3a3a;
+            --icon-color-dark: #76c7c0;
+            --border-color-dark: #444;
+            
+            --bg-color-light: #f0f0f0;
+            --text-color-light: #121212;
+            --header-bg-light: #ffffff;
+            --box-bg-light: #ffffff;
+            --box-hover-bg-light: #e0e0e0;
+            --solution-bg-light: #e0e0e0;
+            --solution-hover-bg-light: #d0d0d0;
+            --icon-color-light: #007bff;
+            --border-color-light: #ddd;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color-dark);
+            color: var(--text-color-dark);
+            transition: background-color 0.3s, color 0.3s;
+        }
+        header {
+            background-color: var(--header-bg-dark);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--border-color-dark);
+        }
+        header h1 {
+            margin: 0;
+            color: var(--icon-color-dark);
+        }
+        .horizontal-row {
+            text-align: center;
+            background-color: var(--header-bg-dark);
+            padding: 10px 0;
+            border-bottom: 2px solid var(--border-color-dark);
+            color: var(--text-color-dark);
+            font-size: 1.1em;
+        }
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .flex-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .flex-item {
+            background-color: var(--box-bg-dark);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            flex: 1 1 30%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            box-sizing: border-box;
+        }
+        .flex-item:hover {
+            transform: translateY(-10px);
+            background-color: var(--box-hover-bg-dark);
+        }
+        .flex-item h2 {
+            color: var(--icon-color-dark);
+            margin: 0;
+            font-size: 1.2em;
+        }
+        .flex-item p {
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        .solution {
+            background-color: var(--solution-bg-dark);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .flex-item:hover .solution {
+            background-color: var(--solution-hover-bg-dark);
+        }
+        .benefits {
+            list-style-type: none;
+            padding: 0;
+        }
+        .benefits li {
+            background-color: var(--solution-bg-dark);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .benefits li i {
+            margin-right: 10px;
+            color: var(--icon-color-dark);
+            font-size: 1.5em;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--header-bg-dark);
+            border-top: 2px solid var(--border-color-dark);
+        }
+        .cta-button {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: var(--icon-color-dark);
+            color: var(--bg-color-dark);
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .cta-button:hover {
+            background-color: #64b2a6;
+        }
+        .faq-section {
+            background-color: var(--header-bg-dark);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .faq-section h2 {
+            color: var(--icon-color-dark);
+        }
+        .faq-section .faq {
+            margin-top: 10px;
+        }
+        .faq-section .faq h3 {
+            margin: 10px 0;
+            color: var(--icon-color-dark);
+        }
+        .faq-section .faq p {
+            margin: 0;
+        }
+        .icon {
+            font-size: 2em;
+            color: var(--icon-color-dark);
+            margin-right: 10px;
+        }
+        .icon-text-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .theme-toggle-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--icon-color-dark);
+            color: var(--bg-color-dark);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .theme-toggle-button:hover {
+            background-color: #64b2a6;
+        }
+        @media (max-width: 768px) {
+            .flex-container {
+                flex-direction: column;
+            }
+            .flex-item {
+                flex: 1 1 100%;
+            }
+            .flex-item h2 {
+                font-size: 1em;
+            }
+            .flex-item p {
+                font-size: 0.8em;
+            }
+            .icon {
+                font-size: 1.5em;
+            }
+        }
+        body.light-theme {
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+        }
+        body.light-theme header {
+            background-color: var(--header-bg-light);
+            border-bottom: 2px solid var(--border-color-light);
+        }
+        body.light-theme .horizontal-row {
+            background-color: var(--header-bg-light);
+            border-bottom: 2px solid var(--border-color-light);
+            color: var(--text-color-light);
+        }
+        body.light-theme .flex-item {
+            background-color: var(--box-bg-light);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        body.light-theme .flex-item:hover {
+            background-color: var(--box-hover-bg-light);
+        }
+        body.light-theme .flex-item h2 {
+            color: var(--icon-color-light);
+        }
+        body.light-theme .solution {
+            background-color: var(--solution-bg-light);
+        }
+        body.light-theme .flex-item:hover .solution {
+            background-color: var(--solution-hover-bg-light);
+        }
+        body.light-theme .benefits li {
+            background-color: var(--solution-bg-light);
+        }
+        body.light-theme .benefits li i {
+            color: var(--icon-color-light);
+        }
+        body.light-theme footer {
+            background-color: var(--header-bg-light);
+            border-top: 2px solid var(--border-color-light);
+        }
+        body.light-theme .cta-button {
+            background-color: var(--icon-color-light);
+            color: var(--bg-color-light);
+        }
+        body.light-theme .faq-section {
+            background-color: var(--header-bg-light);
+        }
+        body.light-theme .faq-section h2 {
+            color: var(--icon-color-light);
+        }
+        body.light-theme .faq-section .faq h3 {
+            color: var(--icon-color-light);
+        }
+        body.light-theme .icon {
+            color: var(--icon-color-light);
+        }
+        body.light-theme .theme-toggle-button {
+            background-color: var(--icon-color-light);
+            color: var(--bg-color-light);
+        }
+        /* Your existing CSS styles */
+        .faq-box {
+            border: 1px solid var(--border-color-dark);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+            cursor: pointer;
+        }
+        .faq-box:hover {
+            background-color: var(--solution-hover-bg-light);
+            transform: translateY(-5px);
+        }
+        .question {
+            margin-bottom: 10px;
+            color: var(--icon-color-dark);
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .answer {
+            display: none;
+        }
+        .faq-box.open .answer {
+            display: block;
+        }
+    </style>
+</head>
+<body class="light-theme">
+<header>
+    <h1>AIVidur: Your Generative AI Playground</h1>
+</header>
+
+<div class="horizontal-row">
+    While Generative AI is transformative, there are still challenges to be overcome for the practical applications. Some key challenges are :
+</div>
+
+<div class="container">
+    <div class="flex-container">
+        <div class="flex-item">
+            <div class="icon-text-container">
+                <i class="fas fa-cogs icon"></i>
+                <h2>Technical Knowledge Required</h2>
+            </div>
+            
+            <div class="solution">
+                <p>AIVidur is a no-code platform that does not require any technical knowledge to to create GenAI models.</p>
+            </div>
+        </div>
+        <div class="flex-item">
+            <div class="icon-text-container">
+                <i class="fas fa-user-cog icon"></i>
+                <h2>General Purpose Models</h2>
+            </div>
+            
+            <div class="solution">
+                <p>AIVidur enables users to create their own custom models by providing custom documents in the pdf format.</p>
+            </div>
+        </div>
+        <div class="flex-item">
+            <div class="icon-text-container">
+                <i class="fas fa-list icon"></i>
+                <h2>Overwhelming Choices</h2>
+            </div>
+            
+            <div class="solution">
+                <p>AIVidur is a LLM marketplace where users can select from various models such as GPT, Llama, Gemini, and Mistral.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Who Can Benefit From AIVidur</h2>
+        <ul class="benefits">
+            <li><i class="fas fa-graduation-cap"></i>Students : Who want to learn about different GenAI models and experiment by creating their own custom AI assistant.</li>
+            <li><i class="fas fa-flask"></i>Researchers: Who want to summarize and chat with research papers and documents.</li>
+            <li><i class="fas fa-briefcase"></i>Professionals: Who want to do a PoC before implementing in the production environment.</li>
+        </ul>
+    </div>
+
+           
+    <a href="#" class="cta-button" onclick="redirectToLogin()">Try AIVidur Now</a>
+    
+
+    
+
+    <div class="faq-section">
+        <h2>FAQ</h2>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">Is there a limit on the number of PDFs I can upload?</h3>
+                <p class="answer">No, there is no limit on the number of PDFs you can upload however there is an overall size limit of 10 MB.</p>
+            </div>
+        </div>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">Will the uploaded documents be used to train AI models?</h3>
+                <p class="answer">No, your uploaded documents are used solely for creating your custom models and are not used to train other AI models.</p>
+            </div>
+        </div>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">Will my model be visible to others?</h3>
+                <p class="answer">AIVidur supports 'Private' and 'Public' mode of assistant creation. Private AI assistants will not be visible to others.</p>
+            </div>
+        </div>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">Are documents or models stored stored in any local server?</h3>
+                <p class="answer">AIVidur is a cloud based platform and all documents, index databases, and transaction histories are stored on Azure cloud database.</p>
+            </div>
+        </div>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">How are the Gen AI models created?</h3>
+                <p class="answer">AIVidur uses RAG(Retrieval Augmented Generation) technology and uses langchain to manage LLM API calls. It uses model specific APIs for the Chat or summarization </p>
+            </div>
+        </div>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">How many LLMs are supported in AIVidur?</h3>
+                <p class="answer">Currently AIVidur can be used for OpenAI, Gemeini, Llama and Mistral. More models will be added in the future.</p>
+            </div>
+        </div>
+        <div class="faq">
+            <div class="faq-box">
+                <h3 class="question">Is the platform available for free?</h3>
+                <p class="answer">AIVidur is an experimentation platform and is currently free for use. It has been created for learning and PoC and commercial deployment is not reccomended.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>Any feedback or suggestions can be sent to vidur.genai@gmail.com. &copy; 2024 AIVidur. All rights reserved.</p>
+</footer>
+
+<button class="theme-toggle-button" onclick="toggleTheme()">Toggle Theme</button>
+
+<script>
+    // JavaScript to toggle visibility of answers when questions are clicked
+    document.addEventListener('DOMContentLoaded', function () {
+        const faqBoxes = document.querySelectorAll('.faq-box');
+        faqBoxes.forEach(function (faqBox) {
+            faqBox.addEventListener('click', function () {
+                this.classList.toggle('open');
+            });
+        });
+    });
+    function toggleTheme() {
+        document.body.classList.toggle('light-theme');
+    }
+    
+    function redirectToLogin() {
+        window.location.href = "/loginpage";
+    }
+    
+</script>
+
+</body>
+</html>
+
+
+           

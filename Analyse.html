@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="common.css">    
+    <style>
+        /* Section styles */
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        /* Upload Files Section */
+        .questions-section, .answer-section {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #fdfafaf0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Answer Section */
+        .answer-section {
+            margin-top: 20px;
+            height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+
+        
+        /* Style the microphone button with a background image */
+        #startButton {
+            /* Replace 'microphone.png' with the actual image file path */
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+        }
+                /* Style for the search box */
+        /* Style for the search box */
+        #selectAssistantSearch {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        /* Style for the dropdown button */
+        #searchDropdown {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            
+        }
+        /* Style for the container */
+        .container {
+            display: flex;
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+         
+        }
+
+        /* Style for the first box */
+        .box1 {
+            width: 0px; /* Initial width set to 0px to make it collapsed */
+            background-color: rgba(243, 243, 247, 0.845);            
+        }
+
+        /* Style for the second box */
+        .box2 {
+            flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+            background-color: white;          
+            position: relative;
+            margin-left: 10px;
+        }
+
+        /* Style for the hamburger menu icon */
+        #collapseButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #pagetitle h2 {
+            margin-left: 40px; /* Add left margin for spacing */
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            display: none; /* Initially hide the spinner */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+    </style>
+</head>
+<body>
+    <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+
+    <div class="container">
+        <div class="box1" id="box1">
+            <script src="/sidebar"></script>
+            <script>createSidebarTemplate();</script>
+        </div> 
+
+        <div class="box2" id="box2">
+            <div id="collapseButton" onclick="collapseBox()">&#9776;</div>            
+            <div id="pagetitle">
+                <h2>Analyse Interview Reponses</h2>
+            </div>
+                <h6>Select the Assistant: </h6>  
+                <div style="position: relative;">
+                    <select id="assistantDropdown" class="form-control" style="margin-top: 5px;" onchange="fetchUsers()">
+                        <option value="" disabled selected>Select the Assistant</option>
+                        <!-- Options will be dynamically added here -->
+                    </select>
+                </div>
+                <h6>Select the user for analysis:</h6>
+                <div style="position: relative;">
+                    <select id="userDropdown" class="form-control" style="margin-top: 5px;">
+                        <option value="" disabled selected>Select the User</option>
+                        <!-- Options will be dynamically added here -->
+                    </select>
+                </div>
+
+                <!-- Questions Section -->
+                
+                <h6>Full Interview Text:</h6>
+                <div style="display: flex; align-items: center;">
+                    <textarea id="interviewText" style="flex: 1; padding: 10px;" rows="5" class="form-control" readonly></textarea>  
+                    
+                </div>
+                <button onclick="convertToPDFConv()" class="btn btn-primary">Download the Conversation</button>
+                
+
+                <!-- Questions Section -->
+                
+                <h6>Provide the Prompt for Analysis:</h6>
+                <div style="display: flex; align-items: center;">
+                    <textarea id="prompt" style="flex: 1; padding: 10px;" rows="2" class="form-control"></textarea>
+                    <button id="summarizeResponse" onclick="summarizeResponse()" style="margin-left: 10px;" class="btn btn-primary">Ask</button>
+                    <button id="startButton">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+                
+                <div id="loadingSpinner" class="loading-spinner" style="margin-left: 5px;"></div>
+                <!-- Answer Section -->
+                <h6>Analysed Response:</h6>
+                <div class="section answer-section">
+                    <p id="answerText"></p>
+                </div>
+                
+                <button onclick="convertToPDFAnalysis()" class="btn btn-primary">Download the Analysis</button>
+                </div>
+
+                
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="common.js"></script>
+    <script src="https://unpkg.com/wordwrap@1.0.0/wordwrap.js"></script>
+    <script type="text/javascript">
+        var jsPDF = window.jspdf.jsPDF;
+        $(document).ready(function() {
+            if(jsPDF && jsPDF.version) {
+                $('#dversion').text('Version ' + jsPDF.version);
+            }
+        });
+    </script>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchAssistantNames();
+            
+        }); 
+        
+        function fetchAssistantNames() {
+        const apiUrl = 'http://127.0.0.1:5000/get_assistants_data';
+
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Data:', data); // Log the data to the console                
+
+                const assistantDropdown = document.getElementById('assistantDropdown');
+
+                // Clear existing options
+                assistantDropdown.innerHTML = '';
+
+                // Check if data is an array
+                if (Array.isArray(data.assistant_data)) {
+                    // Populate options based on the fetched data
+                    data.assistant_data.forEach(assistant => {
+                        const option = document.createElement('option');
+                        option.value = assistant[0]; // Replace with the actual property name
+                        option.textContent = assistant[0]; // Replace with the actual property name
+                        assistantDropdown.appendChild(option);
+                    });
+                    
+                    
+                } else {
+                    console.error('Error: Data is not an array', data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+                         
+        function fetchUsers() {
+            const assistantDropdown = document.getElementById('assistantDropdown');
+            const selectedAssistant = assistantDropdown.value;
+
+            const userDropdown = document.getElementById('userDropdown');
+            userDropdown.innerHTML = '<option value="" disabled selected>Select the User</option>';
+            const conversationTextarea = document.getElementById('interviewText');
+            conversationTextarea.value = '';
+            const promptTextarea = document.getElementById('prompt');
+            promptTextarea.value = '';
+            const responseTextarea = document.getElementById('answerText');
+            responseTextarea.textContent = '';
+
+            if (selectedAssistant.trim() !== '') {
+                // Make a REST API call to fetch users based on the selected assistant
+                const apiUrl = `http://127.0.0.1:5000/get_interview_user/${selectedAssistant}`;
+
+                fetch(apiUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Users Data:', data); // Log the data to the console
+
+                        // Check if data is an array
+                        if (Array.isArray(data.interview_users)) {
+                            const userDropdown = document.getElementById('userDropdown');
+                            userDropdown.innerHTML = '<option value="ALL">ALL</option>'; // Add 'ALL' as the first option
+
+                            // Populate options based on the fetched data
+                            const uniqueUsers = new Set(data.interview_users.map(user => user[0]));
+                            uniqueUsers.forEach(user => {
+                                const option = document.createElement('option');
+                                option.value = user; // Replace with the actual property name
+                                option.textContent = user; // Replace with the actual property name
+                                userDropdown.appendChild(option);
+                            });
+                            if (uniqueUsers.size > 0) {
+                            // Set up an event listener for user dropdown change
+                                userDropdown.addEventListener('change', function () {
+                                    const conversationTextarea = document.getElementById('interviewText');
+                                    conversationTextarea.value = '';
+                                    const promptTextarea = document.getElementById('prompt');
+                                    promptTextarea.value = '';
+                                    const responseTextarea = document.getElementById('answerText');
+                                    responseTextarea.textContent = '';
+                                    const selectedUser = userDropdown.value;
+                                    fetchConversationHistory(selectedAssistant, selectedUser);
+                                });
+                            }
+                        } else {
+                            console.error('Error: Data is not an array', data);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            }
+        }
+
+        function fetchConversationHistory(assistantName, userName) {
+            const conversationTextarea = document.getElementById('interviewText');
+            // Construct the API endpoint for conversation history
+            const conversationApiUrl = `http://127.0.0.1:5000/get_conversation/${assistantName}/${userName}`;
+
+            // Make a REST API call to fetch conversation history
+            fetch(conversationApiUrl)
+                .then(response => response.json())
+                .then(conversationData => {
+                    console.log('Conversation History Data:', conversationData);
+                    if (conversationData.conversation !== undefined) {
+                                        // Set the fetched prompt in the textarea
+                                        conversationTextarea.value = conversationData.conversation;
+                                    } else {
+                                        // Handle the case where prompt is not available
+                                        conversationTextarea.value = '';
+                                    }
+
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+
+        function summarizeResponse() {
+            const prompt = document.getElementById('prompt').value;
+            const answerText = document.getElementById('answerText');
+            const conversation = document.getElementById('interviewText').value
+            const loadingSpinner = document.getElementById('loadingSpinner'); // Get the loading spinner element            
+            
+           
+            answerText.textContent = ''
+            
+            const assistantDropdown = document.getElementById('assistantDropdown');
+    
+            // Get the selected value directly
+            const assistantName = assistantDropdown.value;
+
+
+            // Check if the question is not empty
+            if (prompt.trim() !== '') {
+                // Show the loading spinner while waiting for the response
+                loadingSpinner.style.display = 'inline-block';
+                // Define the API endpoint URL (replace with your actual API URL)
+                const apiUrl = `http://127.0.0.1:5000/get_summary_response/`; // Replace with your actual API URL
+
+                // Create a request payload
+                const requestData = {
+                    prompt: prompt,
+                    assistantName : assistantName,
+                    conversation : conversation
+                };
+
+                // Make a POST request to the API
+                fetch(apiUrl, {
+                    method: 'POST',                                    
+                                  
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData),
+                    credentials: 'include', 
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadingSpinner.style.display = 'none';
+                    // Populate the answer box with the response
+                    answerText.innerHTML = data.message.replace(/\n/g, '<br>');
+                        // Populate the answer box with the formatted response
+                                   
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingSpinner.style.display = 'none';
+                    answerText.textContent = 'An error occurred while fetching the answer.';
+                });
+            } else {
+                answerText.textContent = 'Please enter a question.';
+            }            
+            simulateTyping(answerText.textContent, 0);
+            speakAnswer(answerText.textContent);
+        }
+
+        function speakAnswer(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        const outputBox = document.getElementById('answerText');
+
+        function simulateTyping(text, index) {
+            if (index < text.length) {
+                const char = text.charAt(index);
+                outputBox.textContent += char;
+                index++;
+                setTimeout(() => {
+                    simulateTyping(text, index);
+                }, 50); // Adjust the delay (in milliseconds) to control typing speed
+            }
+        }
+
+        const startButton = document.getElementById('startButton');
+        const outputText = document.getElementById('question');
+
+        let isListening = false; // Track the listening state
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                startButton.style.backgroundColor = 'red'; // Change button color when listening
+                isListening = true;
+            }
+
+            recognition.onend = () => {
+                startButton.style.backgroundColor = ''; // Reset button color when not listening
+                isListening = false;
+            }
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+
+                outputText.textContent = transcript;
+            }
+
+            startButton.addEventListener('click', () => {
+                if (!isListening) {
+                    if (recognition.lang === '') {
+                        recognition.lang = 'en-US'; // Set the language to Hindi - India
+                    }
+                    recognition.start();
+                } else {
+                    recognition.stop();
+                }
+            });
+        } else {
+            startButton.textContent = 'Speech recognition not supported in this browser.';
+        }
+
+        const textToSpeak = document.getElementById('answerText');
+        const speakButton = document.getElementById('speak-button');
+
+        // Check if the SpeechSynthesis API is available
+        if ('speechSynthesis' in window) {
+            const synth = window.speechSynthesis;
+
+            speakButton.addEventListener('click', function () {
+                const text = textToSpeak.textContent;
+                const utterance = new SpeechSynthesisUtterance(text);
+                synth.speak(utterance);
+            });
+        } else {
+            alert('Text-to-speech is not supported in this browser. Please try a different browser.');
+        }
+
+        function convertToPDFConv() {
+            if (typeof jsPDF !== 'undefined') {
+                // Create a new jsPDF instance and proceed
+                const textAreaValue = document.getElementById('interviewText').value;
+                const pdf = new jsPDF();
+
+                // Set font style for the title (bold, larger size, and underline)
+                pdf.setFont('bold');
+                pdf.setFontSize(20);
+                pdf.setLineWidth(0.5); // Set the line width for underline
+
+                // Add title to the first page with adjusted spacing
+                const headerYCoordinate = 15;
+                pdf.text('AIVidur : Conversation History', 70, headerYCoordinate + 5); // Adjust the spacing
+
+                // Reset font settings for the rest of the content
+                pdf.setFont('normal');
+                pdf.setFontSize(12);
+                pdf.setLineWidth(0.2); // Reset the line width
+                
+                // Set fill color for the outer rectangular border (blue)
+                pdf.setFillColor(200, 200, 200); // RGB values for blue
+
+                // Draw outer rectangular border at 3 cm distance
+                const outerBorderX = 5;
+                const outerBorderY = 5;
+                const outerBorderWidth = pdf.internal.pageSize.getWidth() - 10;
+                const outerBorderHeight = pdf.internal.pageSize.getHeight() - 10;
+                pdf.rect(outerBorderX, outerBorderY, outerBorderWidth, outerBorderHeight); // 'F' for fill
+
+                // Reset fill color for text and other elements
+                pdf.setFillColor(0, 0, 0); // Reset to black
+                
+                // Wrap text using splitTextToSize
+                const maxLineLength = 190; // Adjust as needed                
+                const lines = pdf.splitTextToSize(textAreaValue, maxLineLength);
+                // Write wrapped lines to PDF
+                let yPosition = 40; // Adjust starting position
+                for (let i = 0; i < lines.length; i++) {
+                    if (yPosition > pdf.internal.pageSize.getHeight() - 20) { // Check for overflow
+                        pdf.addPage(); // Add a new page if content is overflowing
+                        yPosition = 10; // Reset y position for the new page
+                    }
+                    pdf.rect(outerBorderX, outerBorderY, outerBorderWidth, outerBorderHeight);
+                    pdf.text(lines[i], 10, yPosition); // Adjust horizontal position
+                    yPosition += 10; // Adjust vertical spacing between lines
+                }
+
+                pdf.save("textarea-content.pdf");
+            } else {
+                console.error('jsPDF is not defined. Make sure it is loaded.');
+            }
+        }
+        function convertToPDFAnalysis() {
+            if (typeof jsPDF !== 'undefined') {
+                const textAreaValue = document.getElementById('answerText').innerHTML;
+                const pdf = new jsPDF();
+
+                pdf.setFont('bold');
+                pdf.setFontSize(20);
+                pdf.setLineWidth(0.5);
+
+                const headerYCoordinate = 15;
+                pdf.text('AIVidur : Interview Analysis', 70, headerYCoordinate + 5);
+
+                pdf.setFont('normal');
+                pdf.setFontSize(12);
+                pdf.setLineWidth(0.2);
+
+                const outerBorderX = 5;
+                const outerBorderY = 5;
+                const outerBorderWidth = pdf.internal.pageSize.getWidth() - 10;
+                const outerBorderHeight = pdf.internal.pageSize.getHeight() - 10;
+
+                // Set fill color for the outer rectangular border (blue)
+                pdf.setFillColor(200, 200, 200); // RGB values for blue
+
+                // Draw outer rectangular border at 3 cm distance
+                pdf.rect(outerBorderX, outerBorderY, outerBorderWidth, outerBorderHeight);
+
+                // Reset fill color for text and other elements
+                pdf.setFillColor(0, 0, 0); // Reset to black
+
+                
+                const textContent = textAreaValue.replace(/<br>/g, '\n');
+
+                
+                const maxLineLength = 190; // Adjust as needed
+                const fontSize = 12;
+                const lineHeight = fontSize * 1.2;
+
+                // Split text into lines manually to preserve line breaks
+                const lines = pdf.splitTextToSize(textContent, outerBorderWidth - 20);
+
+                // Write wrapped lines to PDF
+                let yPosition = 40; // Adjust starting position
+                for (let i = 0; i < lines.length; i++) {
+                    if (yPosition > outerBorderHeight - 20) {
+                        pdf.addPage();
+                        yPosition = 10; // Reset y position for the new page
+                    }
+                    pdf.rect(outerBorderX, outerBorderY, outerBorderWidth, outerBorderHeight);
+                    pdf.text(lines[i], outerBorderX + 10, yPosition);
+                    yPosition += lineHeight; // Adjust vertical spacing between lines
+                }
+
+                pdf.save("textarea-content.pdf");
+            } else {
+                console.error('jsPDF is not defined. Make sure it is loaded.');
+            }
+        }
+
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Solution - Sign Up</title>
+    <!-- Add Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+
+
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .login-header {
+            flex: 0;
+        }
+
+        .login-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-box {
+            background-color: #f0f0f0; /* Light grey background */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .form-group input {
+            flex: 2;
+        }
+
+        #registrationMessage {
+            font-size: 16px;
+            color: green;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .login-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            
+        }
+
+        .btn-login {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+        </div>
+        <div class="login-content">
+            <div class="login-box">
+                <h2 class="text-center">Enter your details:</h2>
+                <form id="signupForm">
+                    <div class="form-group">
+                        <label for="UserID">UserID:</label>
+                        <input type="text" class="form-control" id="UserID" name="UserID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Password">Password:</label>
+                        <input type="password" class="form-control" id="Password" name="Password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ConfirmPassword">Confirm Password:</label>
+                        <input type="password" class="form-control" id="ConfirmPassword" name="ConfirmPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Company">Company:</label>
+                        <input type="text" class="form-control" id="Company" name="Company" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Email">Email:</label>
+                        <input type="text" class="form-control" id="Email" name="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Phone">Phone:</label>
+                        <input type="number" class="form-control" id="Phone" name="Phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="City">City:</label>
+                        <input type="text" class="form-control" id="City" name="City" required>
+                    </div>
+                    <!-- Display a message to confirm successful registration -->
+                    <div id="registrationMessage"></div>
+
+                    <div class="login-btn-container">
+                        <button type="button" class="btn btn-primary btn-login" onclick="signup()">Signup</button>
+                        <div style="margin-right: 10px;"></div>
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href = '/'">Login Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Add Bootstrap JS scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function signup() {
+            const formData = new FormData(document.getElementById('signupForm'));
+
+            const password = formData.get('Password');
+            const confirmPassword = formData.get('ConfirmPassword');
+
+            // Check if the passwords match
+            if (password !== confirmPassword) {
+                alert('Passwords do not match. Please re-enter.');
+                return;
+            }
+            const registrationData = {
+                UserID: formData.get('UserID'),
+                Password: formData.get('Password'),
+                Company: formData.get('Company'),
+                Email: formData.get('Email'),
+                Phone: formData.get('Phone'),
+                City: formData.get('City')
+            };
+
+            // Send the registration data to your server for processing (replace with your endpoint)
+            fetch('http://127.0.0.1:5000/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(registrationData),
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    // Registration successful
+                    document.getElementById('registrationMessage').textContent = 'Registration successful!';
+                    // You can redirect the user or perform other actions here
+                } else {
+                    // Registration failed
+                    document.getElementById('registrationMessage').textContent = 'Registration failed. Please try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>

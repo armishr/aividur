@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="common.css">
+    <style>
+        /* Section styles */
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        /* Upload Files Section */
+        .questions-section, .answer-section {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #fdfafaf0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Answer Section */
+        .answer-section {
+            margin-top: 20px;
+            height: 150px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        #promptSetup {
+            font-size: 16px;
+            color: green;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        
+        /* Style the microphone button with a background image */
+        #startButton {
+            /* Replace 'microphone.png' with the actual image file path */
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 40px;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+        }
+                /* Style for the search box */
+        /* Style for the search box */
+        #selectAssistantSearch {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        /* Style for the dropdown button */
+        #searchDropdown {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            
+        }
+        /* Style for the container */
+        .container {
+            display: flex;
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+         
+        }
+
+        /* Style for the first box */
+        .box1 {
+            width: 0px; /* Initial width set to 0px to make it collapsed */
+            background-color: rgba(243, 243, 247, 0.845);            
+        }
+
+        /* Style for the second box */
+        .box2 {
+            flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+            background-color: white;          
+            position: relative;
+            margin-left: 10px;
+        }
+
+        /* Style for the hamburger menu icon */
+        #collapseButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #pagetitle h2 {
+            margin-left: 40px; /* Add left margin for spacing */
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            display: none; /* Initially hide the spinner */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+    </style>
+</head>
+<body>
+    <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+
+    <div class="container">
+        <div class="box1" id="box1">
+            <script src="/sidebar"></script>
+            <script>createSidebarTemplate();</script>
+        </div> 
+
+        <div class="box2" id="box2">
+            <div id="collapseButton" onclick="collapseBox()">&#9776;</div>            
+            <div id="pagetitle">
+                <h2>Customize the prompt for Assistant</h2>
+            </div>  
+                <div style="position: relative;">
+                    <select id="assistantDropdown" class="form-control">
+                        <option value="" disabled selected>Select the Assistant</option>
+                        <!-- Options will be dynamically added here -->
+                    </select>
+                </div>
+
+                <!-- Questions Section -->
+                <div class="section questions-section">
+                    <h5>Please provide specific questions or suggestion for the conversation here</h5>                   
+                    <div style="display: flex; align-items: center;">
+                        <textarea id="prompt" style="flex: 1; padding: 10px;" rows="10" class="form-control"></textarea>                        
+                    </div>
+                    <button id="savePrompt" onclick="savePrompt()" style="margin: 10px auto; display: block; width: 100%;" class="btn btn-primary">Save Prompt</button>
+                </div>
+                <div id="promptSetup"></div>    
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="common.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        fetchAssistantNames();
+        }); 
+
+        function fetchAssistantNames() {
+            const apiUrl = 'http://127.0.0.1:5000/get_assistants_data';
+            const assistantDropdown = document.getElementById('assistantDropdown');
+            const promptTextarea = document.getElementById('prompt');
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Data:', data); 
+
+                    // Clear existing options
+                    assistantDropdown.innerHTML = '';
+
+                    if (Array.isArray(data.assistant_data)) {
+                        data.assistant_data.forEach(assistant => {
+                            const option = document.createElement('option');
+                            option.value = assistant[0];
+                            option.textContent = assistant[0];
+                            assistantDropdown.appendChild(option);
+                        });
+
+                        // Add event listener to fetch and set prompt when assistant is selected
+                        assistantDropdown.addEventListener('change', function() {
+                            const selectedAssistant = assistantDropdown.value;                                                
+                            prompt.innerHTML = '';
+
+                            // Fetch the prompt for the selected assistant
+                            fetch(`http://127.0.0.1:5000/get_prompt/${selectedAssistant}`)
+                                .then(response => response.json())
+                                .then(promptData => {
+                                    if (promptData.prompt !== undefined) {
+                                        // Set the fetched prompt in the textarea
+                                        promptTextarea.value = promptData.prompt;
+                                    } else {
+                                        // Handle the case where prompt is not available
+                                        promptTextarea.value = '';
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error fetching prompt:', error);
+                                    promptTextarea.value = 'Error fetching prompt';
+                                });
+                        });
+
+                        // Trigger the change event to fetch and set the initial prompt
+                        assistantDropdown.dispatchEvent(new Event('change'));
+                    } else {
+                        console.error('Error: Data is not an array', data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }                  
+
+        
+        function savePrompt() {
+            const promptInput = document.getElementById('prompt');
+            const promptSetup = document.getElementById('promptSetup');
+
+            const prompt = promptInput.value.trim();
+            const assistantDropdown = document.getElementById('assistantDropdown');
+
+            // Get the selected value directly
+            const assistantName = assistantDropdown.value;
+
+            // Check if the question is not empty
+            if (prompt !== '') {
+                // Define the API endpoint URL (replace with your actual API URL)
+                const apiUrl = 'http://127.0.0.1:5000/save_prompt/'; // Replace with your actual API URL
+
+                // Create a request payload
+                const requestData = {
+                    prompt: prompt,
+                    assistantName: assistantName,
+                };
+
+                // Make a POST request to the API
+                fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                    credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+
+                    promptSetup.textContent = 'Prompt setup done successfully!';
+                    // You can redirect the user or perform other actions here
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    promptSetup.textContent = 'An error occurred while fetching the prompt.';
+                });
+            } else {
+                promptSetup.textContent = 'Please provide the prompt';
+            }
+        }
+
+
+    </script>
+</body>
+</html>

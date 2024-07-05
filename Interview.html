@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <link rel="stylesheet" href="common.css">
+    <style>
+        /* Section styles */
+        .section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        /* Upload Files Section */
+        .questions-section, .answer-section {
+            margin-top: 20px;
+            text-align: left;
+            background-color: #fdfafaf0;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Answer Section */
+        .answer-section {
+            margin-top: 20px;            
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+
+        
+
+        /* Style for the search box */
+        #selectAssistantSearch {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        /* Style for the dropdown button */
+        #searchDropdown {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            
+        }
+        /* Style for the container */
+        .container {
+            display: flex;
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+         
+        }
+
+        /* Style for the first box */
+        .box1 {
+            width: 0px; /* Initial width set to 0px to make it collapsed */
+            background-color: rgba(243, 243, 247, 0.845);            
+        }
+
+        /* Style for the second box */
+        .box2 {
+            flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+            background-color: white;          
+            position: relative;
+            margin-left: 10px;
+        }
+
+        /* Style for the hamburger menu icon */
+        #collapseButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #pagetitle h2 {
+            margin-left: 40px; /* Add left margin for spacing */
+        }
+
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    
+    </style>
+    <!-- Replace the existing script tag with this one -->
+    
+</head>
+<body>
+    <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+
+    <div class="container">
+        <div class="box1" id="box1">
+            <script src="/sidebar"></script>
+            <script>createSidebarTemplate();</script>
+        </div>
+
+        <div class="box2" id="box2">
+            <div id="collapseButton" onclick="collapseBox()">&#9776;</div>
+            <div id="pagetitle">
+                <h2>Interview</h2>
+            </div>
+            <div style="position: relative;">
+                <select id="assistantDropdown" class="form-control">
+                    <option value="" disabled selected>Select the Assistant</option>
+                    <!-- Options will be dynamically added here -->
+                </select>
+            </div>
+
+            
+            
+            <div class="section questions-section">
+                <div style="display: flex; align-items: center;">
+                    <textarea id="questionText" style="flex: 1; padding: 10px;" rows="2" class="form-control" disabled></textarea>
+                    
+                    <button id="speak-button" style="margin-left: 10px;">
+                        <i class="fas fa-microphone" ></i>
+                    </button>
+                </div>
+                <div>
+                    <button id="nextButton" onclick="nextQuestion()" style="margin-left: 10px; margin-top: 5px;" class="btn btn-secondary">Next</button>
+                    <button id="prevButton" onclick="prevQuestion()" style="margin-left: 10px; margin-top: 5px;" class="btn btn-secondary">Prev</button>
+                </div>
+                
+            </div>
+            <!-- Questions Section -->
+            <div class="section answer-section">
+                <div style="display: flex; align-items: center;">
+                    <textarea id="answer" style="flex: 1; padding: 10px;" rows="2" class="form-control" ></textarea>
+                    
+                    <button id="startButton" style="margin-left: 10px;">
+                        <i class="fas fa-microphone" ></i>
+                    </button>
+                </div>
+                
+            </div>
+            <button id="saveButton" onclick="saveResponsesToFile()" class="btn btn-primary ml-auto">Save Responses</button>
+            
+            <!-- Add this div to display success message -->
+            <div id="successMessage" style="color: green; font-weight: bold; margin-top: 10px;"></div>
+
+
+        </div>
+    </div>
+
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="common.js"></script>
+    <!-- Replace the existing script tag with this one -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/azure-storage/2.10.4/azure-storage.blob.min.js"></script>
+
+
+
+    <script>
+        let currentQuestionIndex = 0;
+        let questions = []; // Initialize questions as an empty array
+
+              
+        loadQuestions(); 
+        
+        function speakAnswer(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        const outputBox = document.getElementById('questionText');
+
+        function simulateTyping(text, index) {
+            if (index < text.length) {
+                const char = text.charAt(index);
+                outputBox.textContent += char;
+                index++;
+                setTimeout(() => {
+                    simulateTyping(text, index);
+                }, 50); // Adjust the delay (in milliseconds) to control typing speed
+            }
+        }
+
+        const startButton = document.getElementById('startButton');
+        const outputText = document.getElementById('answer');
+
+        let isListening = false; // Track the listening state
+
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = () => {
+                startButton.style.backgroundColor = 'red'; // Change button color when listening
+                isListening = true;
+            }
+
+            recognition.onend = () => {
+                startButton.style.backgroundColor = ''; // Reset button color when not listening
+                isListening = false;
+            }
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+
+                outputText.textContent = transcript;
+            }
+
+            startButton.addEventListener('click', () => {
+                if (!isListening) {
+                    if (recognition.lang === '') {
+                        recognition.lang = 'en-US'; // Set the language to Hindi - India
+                    }
+                    recognition.start();
+                } else {
+                    recognition.stop();
+                }
+            });
+        } else {
+            startButton.textContent = 'Speech recognition not supported in this browser.';
+        }
+
+        const textToSpeak = document.getElementById('questionText');
+        const speakButton = document.getElementById('speak-button');
+
+        // Check if the SpeechSynthesis API is available
+        if ('speechSynthesis' in window) {
+            const synth = window.speechSynthesis;
+
+            speakButton.addEventListener('click', function () {
+                const text = textToSpeak.textContent;
+                const utterance = new SpeechSynthesisUtterance(text);
+                synth.speak(utterance);
+            });
+        } else {
+            alert('Text-to-speech is not supported in this browser. Please try a different browser.');
+        }
+  
+        function loadQuestions() {
+            // Load questions from the Azure storage JSON file
+            const storageAccount = 'vidurstorage';
+            const containerName = 'myassistant/Interviews/ATL/input';
+            const blobName = 'questions.json';
+
+            const jsonFileUrl = `https://${storageAccount}.blob.core.windows.net/${containerName}/${blobName}`;
+
+            fetch(jsonFileUrl)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Fetched data:', data); // Add this line to log the fetched data
+                    questions = data.questions || []; // Initialize the questions array with fetched data or an empty array
+                    console.log('Fetched question:', questions[0]);
+                    console.log('Fetched question1:', data.questions[1]);                       
+                    displayQuestion(); // Display the initial question
+                })
+                .catch(error => console.error('Error fetching questions:', error));
+        }
+
+        function displayQuestion() {
+            const questionTextArea = document.getElementById('questionText');
+
+            // Make sure questions is an array and has elements
+            if (Array.isArray(questions) && questions.length > 0) {
+                // Display the current question
+                questionTextArea.textContent = questions[currentQuestionIndex];
+            } else {
+                // Provide a message if there are no questions
+                questionTextArea.textContent = "No questions available.";
+            }
+        }
+
+
+        // Function to display answers on previous/next button clicks
+        function displayAnswers() {
+            const answerTextArea = document.getElementById('answer');
+            const currentResponse = responses[currentQuestionIndex];
+
+            // Display the answer if available, otherwise clear the textarea
+            answerTextArea.value = currentResponse ? currentResponse.answer : '';
+        }
+
+        function prevQuestion() {
+            saveResponses()
+            currentQuestionIndex--;
+            if (currentQuestionIndex >= 0) {
+                displayQuestion();
+                displayAnswers();
+            } else {
+                alert('This is the first question.');
+            }
+        }
+
+        function nextQuestion() {
+            saveResponses()
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                displayQuestion();
+                displayAnswers();
+            } else {
+                alert('You have completed all questions.');
+            }
+        }
+
+        let responses = [];
+
+        function saveResponses() {
+            // Get the user's response
+            const userResponse = document.getElementById('answer').value;
+
+            // Create a response object
+            const responseObj = {
+                question: questions[currentQuestionIndex],
+                answer: userResponse
+            };
+
+            // Update or add the response in the array
+            responses[currentQuestionIndex] = responseObj;
+
+            // Optionally, you can reset the answer textarea
+            document.getElementById('answer').value = '';
+
+            // Optionally, you can display a success message or update UI
+            console.log('Response captured successfully:', responseObj);
+        }
+        // Function to save the responses as a JSON file
+        function saveResponsesToFile() {
+            // Convert the responses array to JSON
+            const jsonResponse = JSON.stringify(responses);
+
+            // Make a POST request to the backend API
+            fetch('http://127.0.0.1:5000/saveResponses', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: jsonResponse,
+                credentials: 'include', 
+            })
+            
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server response:', data);
+                // Optionally handle the server response
+                if (data.success) {
+                    // Display success message
+                    document.getElementById('successMessage').textContent = 'The response has been successfully saved.';
+                } else {
+                    // Display error message if needed
+                    document.getElementById('successMessage').textContent = 'Failed to save the response. Please try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error saving responses:', error);
+            });
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidurAI - Your Personal AI Assistant</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+        }
+
+        header {
+            background-color: #0b0b0b;
+            padding: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #fff;
+            font-size: 2.5em;
+        }
+
+        header p {
+            color: #eee;
+        }
+
+        main {
+            padding: 20px;
+        }
+
+        section {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+        }
+
+        h2 {
+            color: #61dafb;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            color: #555;
+        }
+
+        #cta {
+            margin: 20px;
+        }
+
+        button,
+        a.btn-get-started,
+        a.btn-contact {
+            display: inline-block;
+            padding: 10px 20px;
+            text-decoration: none;
+            color: #fff;
+            background-color: #0b0b0b;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover,
+        a.btn-get-started:hover,
+        a.btn-contact:hover {
+            background-color: #4fa3d1;
+        }
+
+        footer {
+            background-color: #050505;
+            padding: 10px;
+            color: #fff;
+        }
+
+        small {
+            color: #ddd;
+        }
+
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        input[type="email"],
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        header img {
+            width: 200px;
+            height: 70px;
+        }
+        #steps {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .step {
+            flex: 1 1 200px;
+            padding: 20px;
+            margin: 10px;
+            background-color: #61dafb;
+            color: #fff;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .step:hover {
+            background-color: #4fa3d1;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="{{ url_for('static', filename='AIVidurLogoNew.png') }}" alt="VidurAI Logo"> <!-- Replace 'path/to/your/logo.png' with the actual path to your logo -->
+        
+    </header>
+
+    <main>
+        <section id="steps">
+            <div class="step">
+                <h3>Step 1</h3>
+                <p>Create your own assistant by providing custom documents (Body of Knowledge)</p>
+            </div>
+            <div class="step">
+                <h3>Step 2</h3>
+                <p>Setup the custom interview prompts</p>
+            </div>
+            <div class="step">
+                <h3>Step 3</h3>
+                <p>Conduct interviews with the power of GPT creativity</p>
+            </div>
+            <div class="step">
+                <h3>Step 4</h3>
+                <p>Analyze the responses using GenAI and get actionable feedbacks</p>
+            </div>
+        </section>
+        
+    </main>
+
+    <section id="cta">        
+        <p>Revolutionize your productivity with AIVidur, your personal AI assistant! Effortlessly create and tailor your assistant to gather feedback, diagnose issues, and streamline your tasks. Unleash the power of generative AI without any technical barriers.</p>
+        <button class="btn-get-started" onclick="redirectToLogin()">Get Started - Create your Own Bot</button>
+    </section>
+
+    
+    <footer>
+        <p>Any feedback or suggestions can be sent to vidur.genai@gmail.com. &copy; 2023 VidurAI. All rights reserved.</p>
+    </footer>
+    <script>
+        function redirectToLogin() {
+            window.location.href = "/loginpage";
+        }
+    </script>
+</body>
+</html>

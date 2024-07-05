@@ -1,0 +1,33 @@
+/* Style for the container */
+.container {
+  display: flex;
+  margin-left: 0; /* Remove left margin */
+  margin-right: 0; /* Remove right margin */
+
+}
+
+/* Style for the first box */
+.box1 {
+  width: 0px; /* Initial width set to 0px to make it collapsed */
+  background-color: rgba(243, 243, 247, 0.845);            
+}
+
+/* Style for the second box */
+.box2 {
+  flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+  background-color: white;          
+  position: relative;
+}
+
+/* Style for the hamburger menu icon */
+#collapseButton {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+#pagetitle h2 {
+  margin-left: 40px; /* Add left margin for spacing */
+}

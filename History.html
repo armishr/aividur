@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+         /* Style for the container */
+         .container {
+            display: flex;
+            margin-left: 0; /* Remove left margin */
+            margin-right: 0; /* Remove right margin */
+         
+        }
+
+        /* Style for the first box */
+        .box1 {
+            width: 0px; /* Initial width set to 0px to make it collapsed */
+            background-color: rgba(243, 243, 247, 0.845);            
+        }
+
+        /* Style for the second box */
+        .box2 {
+            flex-grow: 1; /* Allow the second box to grow and fill the remaining space */
+            background-color: white;          
+            position: relative;
+        }
+
+        /* Style for the hamburger menu icon */
+        #collapseButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #pagetitle h2 {
+            margin-left: 40px; /* Add left margin for spacing */
+        }
+        .delete-button-disabled {
+            pointer-events: none;
+        }
+        .history-config-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <iframe src="/header" frameborder="0" scrolling="no" width="100%" height="70px"></iframe>
+
+    <div class="container">
+        <!-- Sidebar Column -->
+        <div class="box1" id="box1">
+            <script src="/sidebar"></script>
+            <script>createSidebarTemplate();</script>
+        </div> 
+        <!-- Upload Container Column -->
+        <div class="box2" id="box2">
+            <div id="collapseButton" onclick="collapseBox()">&#9776;</div>            
+            <div id="pagetitle">
+                <h2>History of activities done</h2>
+            </div>
+            
+            <div class="section history-section">               
+
+                <table class="table table-bordered" id="historyTable">
+                    <thead>
+                        <tr>                            
+                            <th>Assistant Name</th>
+                            <th>Input Message</th>
+                            <th>Response Message</th>
+                            <th>Action Performed</th>
+                            <th>Created By</th>
+                            <th>Created On</th>
+                        </tr>
+                    </thead>
+                    <tbody id="auditTableBody">
+                        <!-- Table content will be dynamically loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+        
+    </div>
+
+    <!-- Include Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="common.js"></script>
+
+    <script>
+            // Function to fetch data from the server and populate the table
+        function fetchDataAndPopulateTable() {            
+            fetch('http://127.0.0.1:5000/get_history_data', {
+                    method: 'GET',
+                    credentials: 'include',
+                })
+                .then(response => response.json())
+                .then(data => {
+                    populateTable(data.history);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        // Function to populate the table with data
+        function populateTable(data) {
+            var tableBody = document.getElementById('historyTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';  // Clear existing rows
+
+            // Loop through the data and append rows to the table
+            data.forEach(function (history) {             
+                
+
+                var row = '<tr>' +
+                    '<td>' + history[0] + '</td>' +
+                    '<td>' + history[1] + '</td>' +
+                    '<td>' + history[2] + '</td>' +
+                    '<td>' + history[3] + '</td>' +
+                    '<td>' + history[4] + '</td>' +
+                    '<td>' + history[5] + '</td>' +                    
+                    '<td>' +
+                '</tr>';
+
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Call the function to fetch data and populate the table on form load
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchDataAndPopulateTable();
+        });
+        
+    </script>
+</body>
+</html>
